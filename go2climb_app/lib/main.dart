@@ -3,6 +3,8 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 void main() {
   runApp(Go2ClimbApp());
 }
@@ -454,9 +456,6 @@ class HeartbeatPainter extends CustomPainter {
 }
 
 
-
-
-
 class ProfileScreen extends StatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -579,30 +578,142 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
+  @override
+  _AccountScreenState createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  File? _image;
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController repeatPasswordController = TextEditingController();
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: Color(0xFF223240),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Row(
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Email'),
+            Image.asset(
+              'lib/assets/logo.png',
+              height: 30,
             ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Repeat password'),
-              obscureText: true,
-            ),
+            SizedBox(width: 10),
           ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () {
+              // Aquí puedes agregar lógica para el botón de opciones
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        color: Color(0xFF223240), // Fondo de color oscuro
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0), // Reducir padding superior
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Account',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 40), // Reducir el espacio entre el título y el formulario
+                Container(
+                  padding: EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6.0,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey[300],
+                          backgroundImage: _image != null ? FileImage(_image!) : null,
+                          child: _image == null
+                              ? Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey,
+                          )
+                              : null,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                        ),
+                      ),
+                      TextField(
+                        controller: passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                        ),
+                        obscureText: true,
+                      ),
+                      TextField(
+                        controller: repeatPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Repeat password',
+                        ),
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF223240), // Cambiar color del botón
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          // Aquí puedes agregar la lógica para guardar los cambios
+                        },
+                        child: Text('Save Changes'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
