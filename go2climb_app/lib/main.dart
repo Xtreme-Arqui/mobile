@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:math';
 void main() {
@@ -518,15 +519,127 @@ class AccountScreen extends StatelessWidget {
   }
 }
 
-class DevicesScreen extends StatelessWidget {
+class DevicesScreen extends StatefulWidget {
+  @override
+  _DevicesScreenState createState() => _DevicesScreenState();
+}
+
+class _DevicesScreenState extends State<DevicesScreen> {
+  List<String> linkedDevices = ['BS - 001A1'];
+  List<String> availableDevices = ['BS - 001A2', 'BS - 001A3'];
+  bool isSearching = false;
+
+  void startSearching() {
+    setState(() {
+      isSearching = true;
+    });
+
+    // Simulación de búsqueda de dispositivos
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() {
+        isSearching = false;
+        availableDevices.add('BS - 001A4'); // Añadir un dispositivo simulado tras la búsqueda
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Devices'),
+        backgroundColor: Color(0xFF223240),
+        title: Row(
+          children: [
+            Image.asset(
+              'lib/assets/logo.png',
+              height: 30,
+            ),
+            SizedBox(width: 10),
+            Text('Devices'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {
+              // More options action
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Text('Linked devices:\nBS - 001A1'),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                startSearching();
+              },
+              icon: Icon(Icons.search),
+              label: Text(isSearching ? 'Searching...' : 'Search for devices'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF223240),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Linked devices',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: linkedDevices.map((device) {
+                    return ListTile(
+                      leading: Icon(Icons.bluetooth_connected, color: Colors.green),
+                      title: Text(device),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          // Lógica de desconexión
+                        },
+                        child: Text('Disconnect'),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Available devices',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: availableDevices.map((device) {
+                    return ListTile(
+                      leading: Icon(Icons.bluetooth, color: Colors.blue),
+                      title: Text(device),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          // Lógica de conexión
+                          setState(() {
+                            linkedDevices.add(device);
+                            availableDevices.remove(device);
+                          });
+                        },
+                        child: Text('Connect'),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
