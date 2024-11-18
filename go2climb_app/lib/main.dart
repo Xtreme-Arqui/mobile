@@ -421,7 +421,6 @@ Widget build(BuildContext context) {
   );
 }
 }
-
 class HeartbeatPainter extends CustomPainter {
   final Animation<double> animation;
   final int bpm;
@@ -458,33 +457,124 @@ class HeartbeatPainter extends CustomPainter {
 
 
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool isEditing = false; // Variable para controlar el estado de edición
+
+  // Controladores para los campos de texto
+  final TextEditingController nameController = TextEditingController(text: "John");
+  final TextEditingController surnameController = TextEditingController(text: "Doe");
+  final TextEditingController addressController = TextEditingController(text: "123 Mountain St");
+  final TextEditingController phoneController = TextEditingController(text: "123456789");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Name'),
+            Image.asset(
+              'lib/assets/logo.png',
+              height: 30,
             ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Surname'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Address'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Phone'),
-            ),
+            SizedBox(width: 10),
           ],
         ),
+        backgroundColor: Color(0xFF223240),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isEditing ? Icons.check : Icons.edit,
+              color: Colors.white, // Cambiar el color del icono para mayor visibilidad
+            ),
+            onPressed: () {
+              setState(() {
+                isEditing = !isEditing;
+              });
+            },
+          ),
+        ],
       ),
+      backgroundColor: Color(0xFF223240), // Fondo oscuro para la pantalla
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, // Coloca la tarjeta más alta
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 40), // Ajustar este valor para colocar el contenido más arriba
+              Text(
+                'Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8.0,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTextField('Name:', nameController, isEditing),
+                    SizedBox(height: 20),
+                    _buildTextField('Surname:', surnameController, isEditing),
+                    SizedBox(height: 20),
+                    _buildTextField('Address:', addressController, isEditing),
+                    SizedBox(height: 20),
+                    _buildTextField('Phone:', phoneController, isEditing),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Método para construir un campo de texto editable o no editable
+  Widget _buildTextField(String label, TextEditingController controller, bool isEditable) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 5),
+        TextField(
+          controller: controller,
+          enabled: isEditable,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey[200],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
