@@ -618,14 +618,6 @@ class _AccountScreenState extends State<AccountScreen> {
             SizedBox(width: 10),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {
-              // Aquí puedes agregar lógica para el botón de opciones
-            },
-          ),
-        ],
       ),
       body: Container(
         color: Color(0xFF223240), // Fondo de color oscuro
