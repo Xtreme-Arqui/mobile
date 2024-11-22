@@ -3,7 +3,7 @@ import 'Screens/home.dart'; // Importa la pantalla Home
 import 'Screens/account.dart';
 import 'Screens/device.dart';
 import 'Screens/profile.dart';
-
+import 'Screens/login.dart';
 void main() {
   runApp(Go2ClimbApp());
 }
@@ -19,7 +19,8 @@ class Go2ClimbApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => HomeScreen(), // Usa la nueva HomeScreen importada
+        '/': (context) => LoginScreen(), // Usa la nueva HomeScreen importada
+        '/home': (context) => HomeScreen(),
         '/account': (context) => AccountScreen(),
         '/profile': (context) => ProfileScreen(),
         '/devices': (context) => DeviceScreen(),

@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 
 class HttpClient {
   final Dio _dio = Dio(
-    BaseOptions(baseUrl: "https://trailsync-h4cpdje8dza6esed.brazilsouth-01.azurewebsites.net/api/v1/"),
+    BaseOptions(baseUrl: "https://trailsync-h4cpdje8dza6esed.brazilsouth-01.azurewebsites.net/api/v1"),
   );
 
   Future<Response> getRequest(String path) async {
@@ -21,4 +21,13 @@ class HttpClient {
       rethrow;
     }
   }
+
+  Future<Response> getAllTourists() async {
+    try {
+      return await _dio.get('/tourists');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }
