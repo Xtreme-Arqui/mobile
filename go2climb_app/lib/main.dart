@@ -102,7 +102,7 @@ Widget build(BuildContext context) {
                         ),
                         SizedBox(width: 10),
                         Text(
-                          'Go2Climb',
+                          'TravelSync',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20.0,
