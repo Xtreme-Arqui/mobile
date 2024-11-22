@@ -3,38 +3,95 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go2climb_app/Screens/httpclient.dart';
 
+import 'login.dart';
+
 class AccountScreen extends StatefulWidget {
   @override
   _AccountScreenState createState() => _AccountScreenState();
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  File? _image;
   final HttpClient _httpClient = HttpClient();
+  String email = '';
+  String password = '';
+  String photoUrl = '';
+  bool isPasswordVisible = false;
+  bool isEditing = false;
+  bool isLoading = true;
+
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController repeatPasswordController = TextEditingController();
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
+  @override
+  void initState() {
+    super.initState();
+    if (globalTouristId != null) {
+      _fetchAccount(globalTouristId!);
+    }
+  }
+
+  Future<void> _fetchAccount(int touristId) async {
+    try {
+      final response = await _httpClient.getRequest('/tourists/$touristId');
+      if (response.statusCode == 200) {
+        setState(() {
+          email = response.data['email'] ?? '';
+          password = response.data['password'] ?? '';
+          photoUrl = response.data['photo'] ?? '';
+          emailController.text = email;
+          passwordController.text = password;
+        });
+      }
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
   Future<void> _updateAccount() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
-      final response = await _httpClient.postRequest('tourists/update', {
-        "email": emailController.text,
-        "password": passwordController.text,
-      });
+      // Realiza la solicitud GET para obtener todos los datos actuales del turista
+      final response = await _httpClient.getRequest('/tourists/$globalTouristId');
+
       if (response.statusCode == 200) {
-        print("Account updated successfully");
+        final data = response.data;
+
+        // Crear el objeto completo con los datos obtenidos y solo cambiar email y password
+        final updatedData = {
+          "id": data['id'],
+          "name": data['name'],
+          "lastName": data['lastName'],
+          "email": emailController.text.isNotEmpty ? emailController.text : data['email'],
+          "password": passwordController.text.isNotEmpty ? passwordController.text : data['password'],
+          "phoneNumber": data['phoneNumber'],
+          "address": data['address'],
+          "photo": data['photo'],
+        };
+
+        // Realiza la solicitud PUT para actualizar la información
+        final updateResponse = await _httpClient.putRequest('/tourists/$globalTouristId', updatedData);
+
+        if (updateResponse.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cuenta actualizada exitosamente')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al actualizar la cuenta: ${updateResponse.statusCode}')),
+          );
+        }
       }
     } catch (e) {
-      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al conectar con el servidor: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -47,12 +104,21 @@ class _AccountScreenState extends State<AccountScreen> {
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          children: [
-            Image.asset('lib/assets/logo.png', height: 30),
-            SizedBox(width: 10),
-          ],
-        ),
+        title: Text('Account', style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: Icon(isEditing ? Icons.save : Icons.edit, color: Colors.white),
+            onPressed: () {
+              if (isEditing) {
+                _updateAccount(); // Save changes
+              } else {
+                setState(() {
+                  isEditing = true; // Enter edit mode
+                });
+              }
+            },
+          ),
+        ],
       ),
       body: Container(
         color: Color(0xFF223240),
@@ -61,15 +127,6 @@ class _AccountScreenState extends State<AccountScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Text(
-                  'Account',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 20),
                 Container(
                   padding: EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -85,52 +142,89 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                   child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey[300],
-                          backgroundImage: _image != null ? FileImage(_image!) : null,
-                          child: _image == null
-                              ? Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Colors.grey,
-                          )
-                              : null,
-                        ),
+                      // Photo
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: photoUrl.isNotEmpty
+                            ? NetworkImage(photoUrl)
+                            : null,
+                        child: photoUrl.isEmpty
+                            ? Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.grey,
+                        )
+                            : null,
                       ),
                       SizedBox(height: 20),
-                      TextField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                        ),
-                      ),
-                      TextField(
-                        controller: passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                        ),
-                        obscureText: true,
-                      ),
-                      TextField(
-                        controller: repeatPasswordController,
-                        decoration: InputDecoration(
-                          labelText: 'Repeat password',
-                        ),
-                        obscureText: true,
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF223240),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
+                      // Email
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Email:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                            ),
                           ),
-                        ),
-                        onPressed: _updateAccount,
-                        child: Text('Save Changes'),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: isEditing
+                                ? TextField(
+                              controller: emailController,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                              ),
+                            )
+                                : Text(
+                              email,
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      // Password
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Password:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: isEditing
+                                ? TextField(
+                              controller: passwordController,
+                              obscureText: !isPasswordVisible,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                              ),
+                            )
+                                : Text(
+                              isPasswordVisible ? password : '*******',
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              isPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isPasswordVisible = !isPasswordVisible;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
