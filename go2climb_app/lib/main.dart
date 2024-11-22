@@ -19,7 +19,8 @@ class Go2ClimbApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => HomeScreen(),
+        '/': (context) => LoginScreen(),
+        '/home': (context) => HomeScreen(),
         '/account': (context) => AccountScreen(),
         '/profile': (context) => ProfileScreen(),
         '/devices': (context) => DeviceScreen(),

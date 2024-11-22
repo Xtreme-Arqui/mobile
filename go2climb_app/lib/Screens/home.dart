@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:go2climb_app/Screens/httpclient.dart';
+import 'login.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -28,7 +30,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       duration: Duration(milliseconds: 1000),
     )..repeat();
 
-    _fetchBootData(1); // Asumimos que touristId es 1 por ahora. Puedes cambiarlo según sea necesario.
+    if (globalTouristId != null) {
+      _fetchBootData(globalTouristId!); // Usamos el touristId guardado
+    }
   }
 
   @override
@@ -43,14 +47,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _controller.repeat();
   }
 
-  Future<void> _fetchBootData(int touristId) async {
+  Future<void> _fetchBootData(int bootId) async {
     try {
-      final response = await _httpClient.getRequest('/boots/touristId=$touristId');
+      final response = await _httpClient.getRequest('/boots/$bootId');
       if (response.statusCode == 200) {
         var bootData = response.data;
         setState(() {
           steps = bootData['steps'] ?? 0;
-          distance = bootData['distance'] ?? 0.0;
+          distance = (bootData['distance'] as num).toDouble();
           heartRate = bootData['heartRate'] ?? 0;
           state = bootData['state'] ?? 'Disconnected';
           batteryLevel = bootData['batery'] ?? 0;
@@ -95,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                           SizedBox(width: 10),
                           Text(
-                            'Go2Climb',
+                            'TravelSync',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20.0,
@@ -313,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
                               SizedBox(height: 5),
                               Text(
-                                '${distance.toStringAsFixed(1)} km travels',
+                                '${distance.toStringAsFixed(3)} km traveled',
                                 style: TextStyle(
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.bold,

@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go2climb_app/Screens/httpclient.dart'; // Importa el httpclient centralizado
 
+// Variable global para guardar el touristId
+dynamic globalTouristId;
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -18,21 +21,44 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       isLoading = true;
     });
+
     try {
-      final response = await httpClient.postRequest(
-        'tourists/login',
-        {'email': emailController.text, 'password': passwordController.text},
-      );
+      final response = await httpClient.getRequest('/tourists');
+
       if (response.statusCode == 200) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // Asegúrate de acceder a la lista dentro del campo "content"
+        final data = response.data;
+        final List<dynamic> tourists = data['content'] ?? [];
+
+        // Busca el usuario en la lista
+        final user = tourists.firstWhere(
+              (tourist) =>
+          tourist['email'] == emailController.text &&
+              tourist['password'] == passwordController.text,
+          orElse: () => null,
+        );
+
+        if (user != null) {
+          // Guarda el touristId en la variable global
+          globalTouristId = user['id'];
+          // Si el usuario es válido, navega a la pantalla principal
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          // Muestra un mensaje de error si las credenciales no coinciden
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Correo o contraseña inválidos. Intenta nuevamente.')),
+          );
+        }
       } else {
+        // Manejo de error si el servidor no devuelve un código 200
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed. Please try again.')),
+          SnackBar(content: Text('Error al iniciar sesión. Código: ${response.statusCode}')),
         );
       }
     } catch (e) {
+      // Manejo de excepciones generales
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error connecting to the server.')),
+        SnackBar(content: Text('Error al conectar con el servidor: ${e.toString()}')),
       );
     } finally {
       setState(() {
