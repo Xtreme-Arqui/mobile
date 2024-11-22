@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go2climb_app/Screens/httpclient.dart';
+import 'login.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -16,18 +18,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _getProfile();
+    if (globalTouristId != null) {
+      _getProfile(globalTouristId!);
+    }
   }
 
-  Future<void> _getProfile() async {
+  Future<void> _getProfile(int touristId) async {
     try {
-      final response = await _httpClient.getRequest('tourists/1'); // Ejemplo de id
+      final response = await _httpClient.getRequest('/tourists/$touristId'); // Usando el touristId global
       if (response.statusCode == 200) {
         setState(() {
           name = response.data['name'] ?? '';
           surname = response.data['lastName'] ?? '';
           address = response.data['address'] ?? '';
-          phone = response.data['phoneNumber'] ?? '';
+          phone = response.data['phoneNumber']?.toString() ?? '';
         });
       }
     } catch (e) {
@@ -44,12 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          children: [
-            Image.asset('lib/assets/logo.png', height: 30),
-            SizedBox(width: 10),
-          ],
-        ),
+        title: Text('Profile', style: TextStyle(color: Colors.white)),
       ),
       body: Container(
         color: Color(0xFF223240),
@@ -57,16 +56,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Profile',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 20),
                 Container(
                   padding: EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -81,11 +72,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTextField(label: 'Name', value: name),
-                      _buildTextField(label: 'Surname', value: surname),
-                      _buildTextField(label: 'Address', value: address),
-                      _buildTextField(label: 'Phone', value: phone),
+                      _buildProfileDetail('Name:', name),
+                      _buildProfileDetail('Surname:', surname),
+                      _buildProfileDetail('Address:', address),
+                      _buildProfileDetail('Phone:', phone),
                     ],
                   ),
                 ),
@@ -97,16 +89,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField({required String label, required String value}) {
+  Widget _buildProfileDetail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        initialValue: value,
-        readOnly: true,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+            ),
+          ),
+          SizedBox(height: 8.0),
+          Container(
+            padding: EdgeInsets.all(12.0),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16.0,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
