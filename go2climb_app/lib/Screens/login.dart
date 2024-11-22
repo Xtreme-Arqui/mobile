@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:go2climb_app/Screens/httpclient.dart';
+import 'package:go2climb_app/Screens/httpclient.dart'; // Importa el httpclient centralizado
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,95 +8,106 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final HttpClient _httpClient = HttpClient();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final HttpClient httpClient = HttpClient();
 
-  Future<void> _login() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+  bool isLoading = false;
 
-    if (email.isEmpty || password.isEmpty) {
-      _showErrorDialog("Por favor, ingrese el correo y la contraseña.");
-      return;
-    }
-
+  void login() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
-      // Llamamos al método para obtener todos los turistas
-      Response response = await _httpClient.getAllTourists();
-      if (response.statusCode == 200 && response.data != null) {
-        // Buscamos al usuario con el email y la contraseña proporcionados
-        List<dynamic> tourists = response.data;
-        bool userFound = false;
-
-        for (var tourist in tourists) {
-          if (tourist['email'] == email && tourist['password'] == password) {
-            userFound = true;
-            break;
-          }
-        }
-
-        if (userFound) {
-          // Login exitoso, navega a la pantalla de inicio
-          Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          // Usuario o contraseña incorrectos
-          _showErrorDialog("Usuario o contraseña incorrectos.");
-        }
+      final response = await httpClient.postRequest(
+        'tourists/login',
+        {'email': emailController.text, 'password': passwordController.text},
+      );
+      if (response.statusCode == 200) {
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
-        _showErrorDialog("Error al obtener la información de los usuarios.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed. Please try again.')),
+        );
       }
     } catch (e) {
-      _showErrorDialog("Ha ocurrido un error inesperado. Verifica tu conexión.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error connecting to the server.')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Error"),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text("Ok"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Iniciar Sesión"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: "Correo electrónico"),
-              keyboardType: TextInputType.emailAddress,
+      backgroundColor: Color(0xFF223240), // Fondo del color del proyecto
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo de la aplicación
+                Image.asset(
+                  'lib/assets/logo.png',
+                  height: 100,
+                ),
+                SizedBox(height: 40),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: Colors.white),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(height: 20),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: Colors.white),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(height: 30),
+                isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : ElevatedButton(
+                  onPressed: login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
+                  child: Text(
+                    'Login',
+                    style: TextStyle(fontSize: 18.0),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: "Contraseña"),
-              obscureText: true,
-            ),
-            SizedBox(height: 32.0),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text("Iniciar Sesión"),
-            ),
-          ],
+          ),
         ),
       ),
     );
