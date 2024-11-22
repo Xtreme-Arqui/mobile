@@ -1,5 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'Screens/home.dart'; // Importa la pantalla Home
+import 'Screens/account.dart';
+import 'Screens/device.dart';
+import 'Screens/profile.dart';
+import 'Screens/login.dart';
 void main() {
   runApp(Go2ClimbApp());
 }
@@ -8,188 +14,65 @@ class Go2ClimbApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Go2Climb',
+      title: 'Go2Climb App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => HomeScreen(),
-        '/profile': (context) => ProfileScreen(),
+        '/': (context) => LoginScreen(),
+        '/home': (context) => HomeScreen(),
         '/account': (context) => AccountScreen(),
-        '/devices': (context) => DevicesScreen(),
+        '/profile': (context) => ProfileScreen(),
+        '/devices': (context) => DeviceScreen(),
         '/logout': (context) => LogoutScreen(),
       },
     );
   }
 }
+class LogoutScreen extends StatefulWidget {
+  @override
+  _LogoutScreenState createState() => _LogoutScreenState();
+}
 
-class HomeScreen extends StatelessWidget {
+class _LogoutScreenState extends State<LogoutScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _scheduleLogout();
+  }
+
+  void _scheduleLogout() {
+    // Espera 3 segundos antes de cerrar la aplicación
+    Future.delayed(Duration(seconds: 3), () {
+      exit(0); // Cierra la aplicación
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Go2Climb'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Color(0xFF223240),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('G2C Boots Smart BS - 001A1'),
-            Text('Connected: 82%'),
-            SizedBox(height: 20),
-            Text('Health'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    Text('Steps'),
-                    Text('00'),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Distance Traveled'),
-                    Text('0 km'),
-                  ],
-                ),
-              ],
+            Image.asset(
+              'lib/assets/logo.png', // Asegúrate de tener el logo en esta ruta
+              height: 100,
             ),
             SizedBox(height: 20),
-            Text('Heart Rate: 90 BPM'),
-          ],
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            DrawerHeader(
-              child: Text('Settings'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
+            Text(
+              'See you soon',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            ListTile(
-              title: Text('Profile'),
-              onTap: () {
-                Navigator.pushNamed(context, '/profile');
-              },
-            ),
-            ListTile(
-              title: Text('Account'),
-              onTap: () {
-                Navigator.pushNamed(context, '/account');
-              },
-            ),
-            ListTile(
-              title: Text('Devices'),
-              onTap: () {
-                Navigator.pushNamed(context, '/devices');
-              },
-            ),
-            ListTile(
-              title: Text('Log Out'),
-              onTap: () {
-                Navigator.pushNamed(context, '/logout');
-              },
-            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Surname'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Address'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Phone'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AccountScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Account'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Repeat password'),
-              obscureText: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DevicesScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Devices'),
-      ),
-      body: Center(
-        child: Text('Linked devices:\nBS - 001A1'),
-      ),
-    );
-  }
-}
-
-class LogoutScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('See you soon'),
       ),
     );
   }
